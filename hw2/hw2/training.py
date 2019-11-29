@@ -57,7 +57,6 @@ class Trainer(abc.ABC):
 
         best_acc = None
         epochs_without_improvement = 0
-
         for epoch in range(num_epochs):
             verbose = False  # pass this to train/test_epoch.
             if epoch % print_every == 0 or epoch == num_epochs-1:
@@ -73,8 +72,45 @@ class Trainer(abc.ABC):
             #    save the model to the file specified by the checkpoints
             #    argument.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            # raise NotImplementedError()
             # ========================
+            actual_num_epochs += 1
+            if not best_acc:
+                best_acc = -1
+
+            """""
+            train_result = self.train_epoch(dl_train, verbose=verbose)
+            train_loss.extend(train_result.losses)
+            train_acc.append(train_result.accuracy)
+
+            test_result = self.test_epoch(dl_test, verbose=verbose)
+            test_loss.extend(test_result.losses)
+            test_acc.append(test_result.accuracy)
+            """""
+            curr_epoch_res_test = self.test_epoch(dl_test, **kw)
+            curr_test_accuracy = curr_epoch_res_test.accuracy
+            test_loss.extend(curr_epoch_res_test.losses)
+            test_acc.append(curr_test_accuracy)
+
+            curr_epoch_res_train = self.train_epoch(dl_train, **kw)
+            curr_train_accuracy = curr_epoch_res_train.accuracy
+            train_loss.extend(curr_epoch_res_train.losses)
+            train_acc.append(curr_train_accuracy)
+
+            curr_loss = test_loss[-1]
+            best_loss = min(test_loss[:-1]) if len(test_loss) >= 2 else 1e3
+            if early_stopping and (curr_loss > best_loss - 1e-4):
+                epochs_without_improvement += 1
+                if epochs_without_improvement >= early_stopping:
+                    break
+            else:
+                epochs_without_improvement = 0
+            """
+                        if checkpoints is not None and test_acc[-1] > best_acc:
+                torch.save(self.model, checkpoints)
+                best_acc = test_acc[-1]
+            
+            """
 
         return FitResult(actual_num_epochs,
                          train_loss, train_acc, test_loss, test_acc)
@@ -110,6 +146,7 @@ class Trainer(abc.ABC):
         :return: A BatchResult containing the value of the loss function and
             the number of correctly classified samples in the batch.
         """
+        #self.optimizer.step(batch)
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -189,8 +226,22 @@ class BlocksTrainer(Trainer):
         #  - Optimize params
         #  - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
         # ========================
+        N = X.shape[0]
+        x = X.reshape(N, -1)
+
+        class_scores = self.model(x)
+        loss = self.loss_fn(class_scores, y).numpy()
+        self.optimizer.zero_grad()
+
+        dout = self.loss_fn.backward()
+        self.model.backward(dout)
+        self.optimizer.step()
+
+        y_pred = torch.argmax(class_scores, dim=1)
+        num_correct = int(torch.sum(y == y_pred).item())
+        #num_correct = torch.sum(y == y_pred).numpy()
 
         return BatchResult(loss, num_correct)
 
@@ -201,9 +252,19 @@ class BlocksTrainer(Trainer):
         #  - Forward pass
         #  - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # raise NotImplementedError()
         # ========================
+        # the exact same thing just without the backward pass
 
+        N = X.shape[0]
+        x = X.reshape(N, -1)
+
+        class_scores = self.model(x)
+        loss = self.loss_fn(class_scores, y).numpy()
+        self.optimizer.zero_grad()
+
+        y_pred = torch.argmax(class_scores, dim=1)
+        num_correct = int(torch.sum(y == y_pred).item())
         return BatchResult(loss, num_correct)
 
 
