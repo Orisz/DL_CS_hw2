@@ -336,7 +336,14 @@ class Dropout(Block):
         #  Notice that contrary to previous blocks, this block behaves
         #  differently a according to the current training_mode (train/test).
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        out = x
+        if self.training_mode:
+            prob_mask = torch.distributions.binomial.Binomial(probs=self.p)
+            sampled_mask = prob_mask.sample(x.shape)
+            scaled_sampled_mask = sampled_mask * (1 / (1 - self.p))
+            self.grad_cache["droped"]= scaled_sampled_mask
+            out = x * scaled_sampled_mask
         # ========================
 
         return out
@@ -344,7 +351,11 @@ class Dropout(Block):
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        dx = dout
+        if self.training_mode:
+            scaled_sampled_mask = self.grad_cache["droped"]
+            dx = dout * scaled_sampled_mask
         # ========================
 
         return dx
@@ -457,26 +468,27 @@ class MLP(Block):
         for i in range(len(hidden_features)-1):
             if activation == 'relu':
                 blocks.append(ReLU())
+                if dropout > 0:
+                    blocks.append(Dropout(dropout))
                 blocks.append(Linear(hidden_features[i], hidden_features[i+1]))
             else:
                 blocks.append(Sigmoid())
+                if dropout > 0:
+                    blocks.append(Dropout(dropout))
                 blocks.append(Linear(hidden_features[i], hidden_features[i + 1]))
 
         # adding the last layer
         if len(hidden_features) > 0:
             if activation == 'relu':
                 blocks.append(ReLU())
+                if dropout > 0:
+                    blocks.append(Dropout(dropout))
                 blocks.append(Linear(hidden_features[-1], num_classes))
             else:
                 blocks.append(Sigmoid())
+                if dropout > 0:
+                    blocks.append(Dropout(dropout))
                 blocks.append(Linear(hidden_features[-1], num_classes))
-        else: #there are no hidden layers
-            if activation == 'relu':
-                blocks.append(ReLU())
-                blocks.append(Linear(in_features, num_classes))
-            else:
-                blocks.append(Sigmoid())
-                blocks.append(Linear(in_features, num_classes))
 
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
