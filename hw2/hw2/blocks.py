@@ -129,13 +129,12 @@ class Linear(Block):
         dx = torch.mm(dout, self.w)
 
         # the res of derivation by w is x
-        self.dw.set_(torch.mm(dout.t(), x))
+        self.dw += torch.mm(dout.t(), x)
 
         # the res of derivation by b is none
-        self.db.set_(torch.sum(dout, dim=0))
-
+        self.db += (torch.sum(dout, dim=0))
         return dx
-
+         
     def __repr__(self):
         return f'Linear({self.in_features}, {self.out_features})'
 
