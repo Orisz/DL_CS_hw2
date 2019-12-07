@@ -21,4 +21,4 @@ def test_part2():
 def test_part3():
     run_nb('Part3_CNNs.ipynb')
 
-test_part2()
+test_part3()

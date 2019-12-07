@@ -284,8 +284,32 @@ class TorchTrainer(Trainer):
         #  - Optimize params
         #  - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # raise NotImplementedError()
         # ========================
+        # forward
+        y_pred = self.model(X)
+        # calc the loss
+        loss = self.loss_fn.forward(y_pred, y)
+
+        #in case of a gpu
+        if self.device:
+            y_pred = y_pred.to(self.device)
+            loss = loss.to(self.device)
+
+        # backward pass
+        loss.backward()
+        loss = loss.item()
+
+        # optimizing
+        self.optimizer.zero_grad()
+        self.optimizer.step()
+
+        # turning prob to one-hot
+        y_pred = [int(y_pred[i].argmax()) for i in range(y_pred.shape[0])]
+        #y_pred  = torch.tensor(y_pred, dtype=y.dtype)
+        if self.device:
+            y_pred = y_pred.to(self.device)
+        num_correct = torch.sum(y == y_pred).item()
 
         return BatchResult(loss, num_correct)
 
@@ -300,7 +324,20 @@ class TorchTrainer(Trainer):
             #  - Forward pass
             #  - Calculate number of correct predictions
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            # raise NotImplementedError()
             # ========================
 
+            # forward
+            y_pred = self.model(X)
+            # in case of a gpu
+            if self.device:
+                y_pred = y_pred.to(self.device)
+
+            loss = self.loss_fn.forward(y_pred, y).item()
+            # turning prob to one-hot
+            y_pred = [int(y_pred[i].argmax()) for i in range(y_pred.shape[0])]
+            # y_pred  = torch.tensor(y_pred, dtype=y.dtype)
+            if self.device:
+                y_pred = y_pred.to(self.device)
+            num_correct = torch.sum(y == y_pred).item()
         return BatchResult(loss, num_correct)
