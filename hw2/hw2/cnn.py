@@ -46,34 +46,17 @@ class ConvClassifier(nn.Module):
         #  CONV->ReLUs should exist at the end, without a MaxPool after them.
         # ====== YOUR CODE: ======
         #raise NotImplementedError()
-
+        kernel_size = 3
+        pool_size = 2
+        padding_zeros = 1
+        cur_in_chan = in_channels
+        for i, out_channels in enumerate(self.channels):
+            layers.append(nn.Conv2d(cur_in_chan, out_channels, kernel_size, padding=padding_zeros))
+            cur_in_chan = out_channels
+            layers.append(nn.ReLU())
+            if (i+1) % self.pool_every == 0:
+                layers.append(nn.MaxPool2d(pool_size))
         # ========================
-        flag = False
-        prev_channels = in_channels
-        num_full_layers = (int)(len(self.channels) / self.pool_every)
-        if num_full_layers != len(self.channels)/self.pool_every:
-            flag = True
-
-        out_channels = -1
-        for i in range(num_full_layers):
-            for j in range(self.pool_every):
-
-                out_channels = self.channels[i * self.pool_every + j]
-                layers.append(nn.Conv2d(in_channels=prev_channels, out_channels=out_channels,
-                                        kernel_size=3, padding=1, stride=1))
-                layers.append(nn.ReLU())
-                prev_channels = out_channels
-            layers.append(nn.MaxPool2d(kernel_size=2))
-
-        if flag:
-            for j in range(len(self.channels) % self.pool_every):
-                out_channels = self.channels[num_full_layers * self.pool_every + j]
-                layers.append(nn.Conv2d(in_channels=prev_channels, out_channels=out_channels,
-                                                      kernel_size=3, padding=1, stride=1))
-                layers.append(nn.ReLU())
-                prev_channels = out_channels
-        # ========================
-
         seq = nn.Sequential(*layers)
         return seq
 
@@ -88,23 +71,20 @@ class ConvClassifier(nn.Module):
         #  The last Linear layer should have an output dim of out_classes.
         # ====== YOUR CODE: ======
         #raise NotImplementedError()
-        # ========================
-        num_pools = (int)(len(self.channels) / self.pool_every)
-        dim_reduce = 2 ** num_pools
-        new_h = max(1, (int)(in_h / dim_reduce))
-        new_w = max(1, (int)(in_w / dim_reduce))
-        index = min(len(self.channels), self.pool_every * num_pools - 1)
-
-        last_layer = self.channels[index] if len(self.filters) >= self.pool_every else in_channels
-        num_features = last_layer * new_h * new_w
-        prev_layer = num_features
-
-        for lay in self.hidden_dims:
-            layers.append(nn.Linear(prev_layer, lay))
+        N = len(self.channels)#num of conv->relu blocks
+        P = self.pool_every
+        num_of_pools = N // P
+        in_h_features = in_h / (2**num_of_pools)
+        in_w_features = in_w / (2**num_of_pools)
+        in_chanels_features = self.channels[-1]
+        in_features = in_h_features * in_w_features * in_chanels_features
+        for hid_dim in self.hidden_dims:
+            layers.append(nn.Linear(int(in_features), hid_dim))
+            in_features = hid_dim
             layers.append(nn.ReLU())
-            prev_layer = lay
-        layers.append(nn.Linear(prev_layer, self.out_classes))
-
+        #add final linear layer for classes
+        layers.append(nn.Linear(in_features, self.out_classes))
+        # ========================
         seq = nn.Sequential(*layers)
         return seq
 
@@ -113,11 +93,11 @@ class ConvClassifier(nn.Module):
         #  Extract features from the input, run the classifier on them and
         #  return class scores.
         # ====== YOUR CODE: ======
-        # raise NotImplementedError()
-        # ========================
+        #raise NotImplementedError()
         features = self.feature_extractor(x)
-        features = features.view(features.size(0), -1)
-        out = self.classifier(features)
+        col_vec_features = features.view(features.shape[0], -1)
+        out = self.classifier(col_vec_features)
+        # ========================
         return out
 
 
@@ -201,5 +181,5 @@ class YourCodeNet(ConvClassifier):
     #  For example, add batchnorm, dropout, skip connections, change conv
     #  filter sizes etc.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
     # ========================
