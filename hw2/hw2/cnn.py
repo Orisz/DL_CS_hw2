@@ -135,7 +135,25 @@ class ResidualBlock(nn.Module):
         #  Use convolutions which preserve the spatial extent of the input.
         #  For simplicity of implementation, we'll assume kernel sizes are odd.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        main_layers = []
+        shortcut_layers = []
+        
+        cur_in_chan = in_channels
+        for out_channels, ker_size in zip(channels, kernel_sizes):
+            padding_zeros = int((ker_size - 1) / 2)
+            main_layers.append(nn.Conv2d(cur_in_chan, out_channels, ker_size, padding=padding_zeros))
+            if batchnorm:
+                main_layers.append(nn.BatchNorm2d(out_channels))
+            if dropout > 0:
+                main_layers.append(nn.Dropout(dropout))
+            main_layers.append(nn.ReLU())
+            cur_in_chan = out_channels
+            
+        shortcut_layers.append(nn.Conv2d(in_channels, channels[-1], kernel_size=1, bias=False))
+        shortcut_layers.append(nn.BatchNorm2d(channels[-1]))
+        self.main_path = nn.Sequential(*main_layers)
+        self.shortcut_path = nn.Sequential(*shortcut_layers)
         # ========================
 
     def forward(self, x):
