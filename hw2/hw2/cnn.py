@@ -234,4 +234,58 @@ class YourCodeNet(ConvClassifier):
     #  filter sizes etc.
     # ====== YOUR CODE: ======
     #raise NotImplementedError()
+    def _make_feature_extractor(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        #  [(CONV -> BN -> ReLU)*P -> MaxPool]*(N/P)
+        #  Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
+        #  Pooling to reduce dimensions after every P convolutions.
+        #  Note: If N is not divisible by P, then N mod P additional
+        #  CONV-> BN -> ReLUs should exist at the end, without a MaxPool after them.
+        # ====== YOUR CODE: ======
+        #raise NotImplementedError()
+        kernel_size = 3
+        pool_size = 2
+        padding_zeros = 1
+        cur_in_chan = in_channels
+        for i, out_channels in enumerate(self.channels):
+            layers.append(nn.Conv2d(cur_in_chan, out_channels, kernel_size, padding=padding_zeros))
+            layers.append(nn.BatchNorm2d(out_channels))
+            cur_in_chan = out_channels
+            layers.append(nn.ReLU())
+            if (i+1) % self.pool_every == 0:
+                layers.append(nn.MaxPool2d(pool_size))
+        # ========================
+        seq = nn.Sequential(*layers)
+        return seq
+
+    def _make_classifier(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        # TODO: Create the classifier part of the model:
+        #  (Linear -> ReLU -> Dropout)*M -> Linear
+        #  You'll first need to calculate the number of features going in to
+        #  the first linear layer.
+        #  The last Linear layer should have an output dim of out_classes.
+        # ====== YOUR CODE: ======
+        #raise NotImplementedError()
+        N = len(self.channels)#num of conv->relu blocks
+        P = self.pool_every
+        num_of_pools = N // P
+        in_h_features = in_h / (2**num_of_pools)
+        in_w_features = in_w / (2**num_of_pools)
+        in_chanels_features = self.channels[-1]
+        in_features = in_h_features * in_w_features * in_chanels_features
+        for hid_dim in self.hidden_dims:
+            layers.append(nn.Linear(int(in_features), hid_dim))
+            in_features = hid_dim
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout())
+        #add final linear layer for classes
+        layers.append(nn.Linear(in_features, self.out_classes))
+        # ========================
+        seq = nn.Sequential(*layers)
+        return seq
     # ========================

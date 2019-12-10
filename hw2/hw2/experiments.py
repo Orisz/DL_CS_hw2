@@ -64,7 +64,30 @@ def run_experiment(run_name, out_dir='./results', seed=None, device=None,
     #   for you automatically.
     fit_res = None
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    x0, _ = ds_train[0]
+    in_size = x0.shape
+    num_classes = 10
+    filters = [layer for layer in filters_per_layer for _ in range(layers_per_block)]
+    model = model_cls(in_size=in_size, out_classes=num_classes, channels=filters,
+                      pool_every=pool_every, hidden_dims=hidden_dims).to(device)
+
+    loss_fn = torch.nn.CrossEntropyLoss().to(device)
+
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, momentum=0.9, weight_decay=reg)
+
+    trainer = training.TorchTrainer(model, loss_fn, optimizer, device)
+
+    dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
+    dl_test = torch.utils.data.DataLoader(ds_test, bs_test, shuffle=False)
+    fit_res = trainer.fit(dl_train, dl_test, num_epochs=epochs, checkpoints='./checkpoint',
+                          early_stopping=early_stopping, max_batches=batches)
+    print(fit_res.train_loss[0])
+    fit_res.train_loss = [tr_loss.item() for tr_loss in fit_res.train_loss]
+    fit_res.train_acc = [tr_acc.item() for tr_acc in fit_res.train_acc]
+    fit_res.test_loss = [tst_loss.item() for tst_loss in fit_res.test_loss]
+    fit_res.test_acc = [tst_acc.item() for tst_acc in fit_res.test_acc]
+    print(fit_res.train_loss[0])
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)
