@@ -143,15 +143,24 @@ class ResidualBlock(nn.Module):
         for out_channels, ker_size in zip(channels, kernel_sizes):
             padding_zeros = int((ker_size - 1) / 2)
             main_layers.append(nn.Conv2d(cur_in_chan, out_channels, ker_size, padding=padding_zeros))
+            if dropout > 0:
+                main_layers.append(nn.Dropout2d(dropout))
             if batchnorm:
                 main_layers.append(nn.BatchNorm2d(out_channels))
-            if dropout > 0:
-                main_layers.append(nn.Dropout(dropout))
             main_layers.append(nn.ReLU())
             cur_in_chan = out_channels
-            
-        shortcut_layers.append(nn.Conv2d(in_channels, channels[-1], kernel_size=1, bias=False))
-        shortcut_layers.append(nn.BatchNorm2d(channels[-1]))
+        
+        #removing last unnececary drop, bn, relu:
+        if(dropout>0 and batchnorm):#we have both bn and drop
+            main_layers = main_layers[:-3]
+        elif dropout==0 and batchnorm==False:#we dont have either, bn or drop
+            main_layers = main_layers[:-1]
+        else:#we have 1, drop or bn
+            main_layers = main_layers[:-2]
+        if in_channels != channels[-1]:
+            #shortcut identitiy initialization
+            conv1x1 = nn.Conv2d(in_channels, channels[-1], kernel_size=(1,1), bias=False)
+            shortcut_layers.append(conv1x1)
         self.main_path = nn.Sequential(*main_layers)
         self.shortcut_path = nn.Sequential(*shortcut_layers)
         # ========================
