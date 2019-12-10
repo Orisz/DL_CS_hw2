@@ -80,14 +80,15 @@ def run_experiment(run_name, out_dir='./results', seed=None, device=None,
 
     dl_train = torch.utils.data.DataLoader(ds_train, bs_train, shuffle=False)
     dl_test = torch.utils.data.DataLoader(ds_test, bs_test, shuffle=False)
-    fit_res = trainer.fit(dl_train, dl_test, num_epochs=epochs, checkpoints='./checkpoint',
+    fit_tmp = trainer.fit(dl_train, dl_test, num_epochs=epochs, checkpoints='./checkpoint',
                           early_stopping=early_stopping, max_batches=batches)
-    print(fit_res.train_loss[0])
-    fit_res.train_loss = [tr_loss.item() for tr_loss in fit_res.train_loss]
-    fit_res.train_acc = [tr_acc.item() for tr_acc in fit_res.train_acc]
-    fit_res.test_loss = [tst_loss.item() for tst_loss in fit_res.test_loss]
-    fit_res.test_acc = [tst_acc.item() for tst_acc in fit_res.test_acc]
-    print(fit_res.train_loss[0])
+    train_loss_list = [tr_loss.item() for tr_loss in fit_tmp.train_loss]
+    train_acc_list = [tr_acc.item() for tr_acc in fit_tmp.train_acc]
+    test_loss_list = [tst_loss.item() for tst_loss in fit_tmp.test_loss]
+    test_acc_list = [tst_acc.item() for tst_acc in fit_tmp.test_acc]
+    fit_res = FitResult(num_epochs=fit_tmp.num_epochs, train_loss=train_loss_list,
+             train_acc=train_acc_list, test_loss=test_loss_list,
+             test_acc=test_acc_list)
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)
