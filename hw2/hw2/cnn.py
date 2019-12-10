@@ -191,7 +191,32 @@ class ResNetClassifier(ConvClassifier):
         #  CONV->ReLUs (with a skip over them) should exist at the end,
         #  without a MaxPool after them.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        N = len(self.channels)#num of conv->relu blocks
+        P = self.pool_every
+        num_of_P_res_blocks = N // P
+        last_res_clock_len = N % P
+            
+        kernel_size = 3
+        pool_size = 2
+        cur_in_chan = in_channels
+        start_channel = 0
+        res_blocks_added = 0
+        for i, out_channels in enumerate(self.channels):
+            if (i+1) % P == 0 and res_blocks_added < num_of_P_res_blocks:
+                layers.append(ResidualBlock(in_channels=cur_in_chan,
+                                            channels=self.channels[start_channel:start_channel+P],
+                                            kernel_sizes=[kernel_size]*P))
+                cur_in_chan = out_channels
+                layers.append(nn.MaxPool2d(pool_size))
+                res_blocks_added += 1
+                start_channel += P
+            if res_blocks_added == num_of_P_res_blocks and last_res_clock_len != 0:
+                #add (conv->relu)*(#<mod division>)
+                layers.append(ResidualBlock(in_channels=cur_in_chan,
+                                            channels=self.channels[start_channel:start_channel+last_res_clock_len],
+                                            kernel_sizes=[kernel_size]*last_res_clock_len))
+                break #break for loop
         # ========================
         seq = nn.Sequential(*layers)
         return seq
