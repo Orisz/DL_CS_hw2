@@ -73,8 +73,9 @@ def run_experiment(run_name, out_dir='./results', seed=None, device=None,
                       pool_every=pool_every, hidden_dims=hidden_dims).to(device)
 
     loss_fn = torch.nn.CrossEntropyLoss().to(device)
-
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, momentum=0.9, weight_decay=reg)
+#     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=reg,)
+#     optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, momentum=0.9, weight_decay=reg)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
 
     trainer = training.TorchTrainer(model, loss_fn, optimizer, device)
 
@@ -93,7 +94,69 @@ def run_experiment(run_name, out_dir='./results', seed=None, device=None,
 
     save_experiment(run_name, out_dir, cfg, fit_res)
 
+def experiment1_1():
+    K = [32, 64]
+    L = [2, 4, 8, 16]
+    for k in K:
+        for l in L:
+            torch.cuda.empty_cache()
+            exp_name = 'exp1_1'
+            run_experiment(exp_name, seed=42, bs_train=100, batches=500, epochs=20, early_stopping=5,
+                           filters_per_layer=[k], layers_per_block=l, pool_every=4, hidden_dims=[100],
+                          model_type='cnn',)
 
+
+def experiment1_2():
+    L = [2, 4, 8]
+    K = [32, 64, 128, 256]
+    for l in L:
+        for k in K:
+            torch.cuda.empty_cache()
+            exp_name = 'exp1_2'
+            run_experiment(exp_name, seed=42, bs_train=100, batches=500, epochs=20, early_stopping=5,
+                           filters_per_layer=[k], layers_per_block=l, pool_every=4, hidden_dims=[100],
+                          model_type='cnn',)
+
+
+def experiment1_3():
+    L = [1, 2, 3, 4]
+    K = [64, 128, 256]
+    for l in L:
+        torch.cuda.empty_cache()
+        exp_name = 'exp1_3'
+        run_experiment(exp_name, seed=42, bs_train=100, batches=500, epochs=20, early_stopping=5,
+                           filters_per_layer=K, layers_per_block=l, pool_every=4, hidden_dims=[100],
+                          model_type='cnn',)
+
+def experiment1_4():
+    K1 = [32]
+    L1 = [8, 16, 32]
+    K2 = [64, 128, 256]
+    L2 = [2, 4, 8]
+    for k in K1:
+        for l in L1:
+            torch.cuda.empty_cache()
+            exp_name = 'exp1_4'
+            run_experiment(exp_name, seed=42, bs_train=100, batches=500, epochs=20, early_stopping=5,
+                           filters_per_layer=[k], layers_per_block=l, pool_every=6, hidden_dims=[100],
+                          model_type='resnet',)
+    for l in L2:
+        torch.cuda.empty_cache()
+        exp_name = 'exp1_4'
+        run_experiment(exp_name, seed=42, bs_train=100, batches=500, epochs=20, early_stopping=5,
+                           filters_per_layer=K2, layers_per_block=l, pool_every=6, hidden_dims=[100],
+                          model_type='resnet',)
+        
+def experiment2():
+    L = [3, 6, 9, 12]
+    K = [32, 64, 128]
+    for l in L:
+        torch.cuda.empty_cache()
+        exp_name = 'exp2'
+        run_experiment(exp_name, seed=42, bs_train=100, batches=500, epochs=20, early_stopping=5,
+                           filters_per_layer=K, layers_per_block=l, pool_every=8, hidden_dims=[100],
+                          model_type='ycn',)
+        
 def save_experiment(run_name, out_dir, cfg, fit_res):
     output = dict(
         config=cfg,

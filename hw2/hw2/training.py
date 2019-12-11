@@ -76,7 +76,7 @@ class Trainer(abc.ABC):
             # ========================
             actual_num_epochs += 1
             if not best_acc:
-                best_acc = -1
+                best_acc = 0.0
 
             """""
             train_result = self.train_epoch(dl_train, verbose=verbose)
@@ -97,13 +97,21 @@ class Trainer(abc.ABC):
             train_loss.extend(curr_epoch_res_train.losses)
             train_acc.append(curr_train_accuracy)
 
-            curr_loss = test_loss[-1]
-            best_loss = min(test_loss[:-1]) if len(test_loss) >= 2 else 1e3
-            if early_stopping and (curr_loss > best_loss - 1e-4):
+#             curr_loss = test_loss[-1]
+#             best_loss = min(test_loss[:-1]) if len(test_loss) >= 2 else 1e3
+#             if early_stopping and (curr_loss > best_loss - 1e-4):
+#                 epochs_without_improvement += 1
+#                 if epochs_without_improvement >= early_stopping:
+#                     break
+#             else:
+#                 epochs_without_improvement = 0
+            if early_stopping and (best_acc > curr_test_accuracy):
                 epochs_without_improvement += 1
                 if epochs_without_improvement >= early_stopping:
                     break
             else:
+                if best_acc < curr_test_accuracy:
+                    best_acc = curr_test_accuracy
                 epochs_without_improvement = 0
             """
                         if checkpoints is not None and test_acc[-1] > best_acc:
@@ -288,9 +296,9 @@ class TorchTrainer(Trainer):
         self.optimizer.zero_grad()
         res = self.model(X)
         loss = self.loss_fn(res, y)
-        if self.device:
-            res = res.to(self.device)
-            loss = loss.to(self.device)
+#         if self.device:
+#             res = res.to(self.device)
+#             loss = loss.to(self.device)
         loss.backward()
         self.optimizer.step()
         res = res.argmax(1)
