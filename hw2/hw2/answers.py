@@ -76,66 +76,73 @@ As a result our cat image outputs prob of 0.3 for horse and 0.7 for cat(better a
 
 part3_q1 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+1. We can clearly see that we succeeded in training with L=2,4.
+Both L=2 and l=4 got similar test accuracy results (~65%), but L=4 was bit better.
+That may be because the model had more channels, meaning more features to learn.
+We can also deduce that the important feature were also learned with L=2, and that with L=4 
+the network learned more fine features that helped it to get a bit better results.
+2. We can see that the L=8 and L=16 failed. That may be because of the vanishing Gradients effect.
+The depth of the networks is considerably bigger than the L=2 and L=4.
+Considering that is really the problem, using a residual network might help, as it will help to prevent 
+the gradients from disappearing all the together.  Also, it might help if we set the hyper-parameters a bit differently,
+which might help us to prevent theme from disappearing.    
+ 
 
 """
 
+
 part3_q2 = r"""
-**Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+In this case, it is again clear that only with L=2 or L=4 the model is trainable.
+Particularly, with L=8 we failed to learn, with all the values of K.
+This leads us to believe that our conclusion in the previous part was correct.
+With L=2, K=32 and K=256 got better results than K=256 and K=128.
+The accuracy is about the same as in the previous experiment.
+With K=4 however K=65 and K=256 were just as good as the other two values, and even a bit better.
 """
 
 part3_q3 = r"""
-**Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+Whenever the depth was to big the models became un-trainable.
+That may be because of the growing Kernel number.
+At the beginning of each layer we have only a few Kernels, and than the number grows drastically. 
+It may be that during the transition between layers, the change from a very big number of descriptors
+to a very small number of kernel makes it difficult for the network to identify the most important descriptors.
+This would also explain why the model of L=1 was trained do well.
 """
 
 part3_q4 = r"""
-**Your answer:**
+Using the skip connection got us much better results than the previous experiments.
+1.1:
+Our accuracy results were better the experiment 1.1. Moreover, in 1.1 experiment the L=8
+model was un-trainable, wheres in this experiment L=8 was trained.
+It got poorer results than L=2 and L=4, but was trainable.
+Using the residual network might have helped with the accuracy as it minimizes the effect to the
+disappearing gradients.
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+1.3:
+Here we can see even more clearly that all the models that were not trainable in 1.3 were indeed 
+trainable with the residual network. This leads us to believe that 2 things:
+firstly - our prior conclusion may have been correct. Using the residual network allowed each layer
+to learn from a "less effected" info and thus could extract features on it's own, even if it
+was difficult to extract them from the previous layer's values.
+secondly - in the prior experiment we have suffered of the vanishing gradients problem too,
+which the residual network helped to solve.  
+The accuracy results were even better than with L=1 in 1.3, which is reasonable as L=1 is a really
+shallow architecture.
 
 """
 
 part3_q5 = r"""
-**Your answer:**
+We used layers of: (conv->relu->BN) and once every 2 of these we added a max-pull layer.
+We used a dropout of 0.5 as the previous experiments led us to believe that we might be overfiting and we
+wanted to generalize our network.
+We also added BN in order to try and speed up the learning process.
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+We got really got accuracy results on the training set, which leads us to believe that we didn't solve our
+generalization problem.
+Moreover, with our architecture the test accuracy was a tad "jumpier" linear than in the other experiments at first,
+but got to a steady test-accuracy after a bit more epochs than in experiment 1.
+This means that our new network might need a different learning rate than the other networks we incountered
+in this exercise.
+ 
 """
 # ==============
