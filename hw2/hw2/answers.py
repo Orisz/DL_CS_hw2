@@ -95,9 +95,9 @@ part3_q2 = r"""
 In this case, it is again clear that only with L=2 or L=4 the model is trainable.
 Particularly, with L=8 we failed to learn, with all the values of K.
 This leads us to believe that our conclusion in the previous part was correct.
-With L=2, K=32 and K=256 got better results than K=256 and K=128.
+With L=2, K=32, K=256 got better results than K=64, K=128.
 The accuracy is about the same as in the previous experiment.
-With K=4 however K=65 and K=256 were just as good as the other two values, and even a bit better.
+With L=4 however K=64 and K=256 were just as good as the other two values, and even a bit better.
 """
 
 part3_q3 = r"""
@@ -132,13 +132,13 @@ shallow architecture.
 """
 
 part3_q5 = r"""
-We used layers of: (conv->relu->BN) and once every 2 of these we added a max-pull layer.
-We used a dropout of 0.5 as the previous experiments led us to believe that we might be overfiting and we
-wanted to generalize our network.
-We also added BN in order to try and speed up the learning process.
+We used layers of: (conv->BN->relu) for the feature extractor. The BN was added every other conv,
+and once every 2 of these we added a max-pool layer.
+At the feature classifier part of the net we added a dropout of 0.5 since the previous experiments led us to believe that we might be overfiting and we wanted to generalize our network.
+We added BN in order to try and speed up the learning process.
 
-We got really got accuracy results on the training set, which leads us to believe that we didn't solve our
-generalization problem.
+We notice that the gap between the L3 and L6 train to test accuracy is smaller then previous experiments so we assume this is due to the affect of the Dropout we added.
+L=9 didn't preform so well. adding resBlocks might help. L=12 was a big failure. This is a predicted outcome since we already saw that "to deep" net might be a bad idea.
 Moreover, with our architecture the test accuracy was a tad "jumpier" linear than in the other experiments at first,
 but got to a steady test-accuracy after a bit more epochs than in experiment 1.
 This means that our new network might need a different learning rate than the other networks we incountered
