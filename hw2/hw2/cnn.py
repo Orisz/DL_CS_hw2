@@ -251,7 +251,8 @@ class YourCodeNet(ConvClassifier):
         cur_in_chan = in_channels
         for i, out_channels in enumerate(self.channels):
             layers.append(nn.Conv2d(cur_in_chan, out_channels, kernel_size, padding=padding_zeros))
-            layers.append(nn.BatchNorm2d(out_channels))
+            if (i+1) % 2 == 0:
+                layers.append(nn.BatchNorm2d(out_channels))
             cur_in_chan = out_channels
             layers.append(nn.ReLU())
             if (i+1) % self.pool_every == 0:
