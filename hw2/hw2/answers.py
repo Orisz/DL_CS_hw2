@@ -77,11 +77,11 @@ As a result our cat image outputs prob of 0.3 for horse and 0.7 for cat(better a
 part3_q1 = r"""
 **Your answer:**
 1. We can clearly see that we succeeded in training with L=2,4.
-Both L=2 and l=4 got similar test accuracy results (~65%), but L=4 was bit better.
+Both L=2 and L=4 got similar test accuracy results (~65%), but L=4 was bit better.
 That may be because the model had more channels, meaning more features to learn.
 We can also deduce that the important feature were also learned with L=2, and that with L=4 
 the network learned more fine features that helped it to get a bit better results.
-2. We can see that the L=8 and L=16 failed. That may be because of the vanishing Gradients effect.
+2. We can see that the L=8 and L=16 failed. That may be because of the vanishing gradients effect.
 The depth of the networks is considerably bigger than the L=2 and L=4.
 Considering that is really the problem, using a residual network might help, as it will help to prevent 
 the gradients from disappearing all the together.  Also, it might help if we set the hyper-parameters a bit differently,
@@ -101,8 +101,9 @@ With L=4 however K=64 and K=256 were just as good as the other two values, and e
 """
 
 part3_q3 = r"""
-Whenever the depth was to big the models became un-trainable.
-That may be because of the growing Kernel number.
+Whenever the depth was too big the models became un-trainable.
+This might be because of the vanishing gradients effect again,
+but that may also be because of the growing Kernel number.
 At the beginning of each layer we have only a few Kernels, and than the number grows drastically. 
 It may be that during the transition between layers, the change from a very big number of descriptors
 to a very small number of kernel makes it difficult for the network to identify the most important descriptors.
@@ -121,10 +122,10 @@ disappearing gradients.
 1.3:
 Here we can see even more clearly that all the models that were not trainable in 1.3 were indeed 
 trainable with the residual network. This leads us to believe that 2 things:
-firstly - our prior conclusion may have been correct. Using the residual network allowed each layer
-to learn from a "less effected" info and thus could extract features on it's own, even if it
-was difficult to extract them from the previous layer's values.
-secondly - in the prior experiment we have suffered of the vanishing gradients problem too,
+Firstly, our prior conclusion may have been correct. 
+Using the residual network allowed each layer to learn from a "less effected" info,
+and thus could extract features on it's own, even if it was difficult to extract them from the previous layer's values.
+Secondly - in the prior experiment we have suffered of the vanishing gradients problem too,
 which the residual network helped to solve.  
 The accuracy results were even better than with L=1 in 1.3, which is reasonable as L=1 is a really
 shallow architecture.
@@ -138,10 +139,11 @@ At the feature classifier part of the net we added a dropout of 0.5 since the pr
 We added BN in order to try and speed up the learning process.
 
 We notice that the gap between the L3 and L6 train to test accuracy is smaller then previous experiments so we assume this is due to the affect of the Dropout we added.
-L=9 didn't preform so well. adding resBlocks might help. L=12 was a big failure. This is a predicted outcome since we already saw that "to deep" net might be a bad idea.
+L=9 didn't preform so well. Adding resBlocks might help.
+L=12 was a big failure. This is a predicted outcome since we already saw that "too deep" net might be a bad idea.
 Moreover, with our architecture the test accuracy was a tad "jumpier" linear than in the other experiments at first,
 but got to a steady test-accuracy after a bit more epochs than in experiment 1.
-This means that our new network might need a different learning rate than the other networks we incountered
+This means that our new network might need a different learning rate than the other networks we encountered
 in this exercise.
  
 """
