@@ -87,14 +87,16 @@ class Trainer(abc.ABC):
             test_loss.extend(test_result.losses)
             test_acc.append(test_result.accuracy)
             """""
-            curr_epoch_res_test = self.test_epoch(dl_test, **kw)
+            curr_epoch_res_test = self.test_epoch(dl_test,verbose=verbose, **kw)
             curr_test_accuracy = curr_epoch_res_test.accuracy
             test_loss.extend(curr_epoch_res_test.losses)
+            #test_loss.append(sum(curr_epoch_res_test.losses)/len(curr_epoch_res_test.losses))
             test_acc.append(curr_test_accuracy)
 
-            curr_epoch_res_train = self.train_epoch(dl_train, **kw)
+            curr_epoch_res_train = self.train_epoch(dl_train,verbose=verbose, **kw)
             curr_train_accuracy = curr_epoch_res_train.accuracy
             train_loss.extend(curr_epoch_res_train.losses)
+            #train_loss.append(sum(curr_epoch_res_train.losses)/len(curr_epoch_res_train.losses))
             train_acc.append(curr_train_accuracy)
 
 #             curr_loss = test_loss[-1]
